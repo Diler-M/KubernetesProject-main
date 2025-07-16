@@ -1,0 +1,23 @@
+name: cleanup
+on:
+  workflow_dispatch:
+  #push:
+    #branches:
+      #- main
+jobs:
+  destroy:
+    name: destroy
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Stop container
+        run: |
+          docker stop game
+          docker rm game
+      - name: Update kubeconfig
+        run: aws eks --region eu-west-2 update-kubeconfig --name EKS_CLOUD
+      - name: Deploy to kubernetes
+        run: kubectl delete -f deployment-service.yml
